@@ -167,3 +167,30 @@ FROM (SELECT HACKER_ID, CHALLENGE_ID, MAX(SCORE) AS MX_SCORE
 JOIN HACKERS HK ON (HK.HACKER_ID = SB.HACKER_ID)
 GROUP BY HK.HACKER_ID, HK.NAME
 ORDER BY SUM_VAL DESC, HK.HACKER_ID ASC;
+
+14. https://www.hackerrank.com/challenges/placements/problem
+Solution:
+SELECT
+    distinct M_NAME
+FROM
+(
+    SELECT
+        ST.id AS M_ID,
+        ST.name AS M_NAME,
+        PK.salary AS M_SALARY,
+        FD.friend_id AS F_ID,
+        (
+            SELECT PK_T.salary
+            FROM packages PK_T
+            WHERE PK_T.id = FD.friend_id
+            AND ST.ID = FD.ID
+        ) AS F_SALARY
+    FROM students AS ST
+    LEFT JOIN packages AS PK
+    ON ST.ID = PK.ID
+    LEFT JOIN friends AS FD
+    ON ST.ID = PK.ID
+    ORDER BY F_SALARY
+) AS MN
+WHERE MN.M_SALARY < F_SALARY;
+

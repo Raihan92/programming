@@ -194,3 +194,30 @@ FROM
 ) AS MN
 WHERE MN.M_SALARY < F_SALARY;
 
+15. https://www.hackerrank.com/challenges/symmetric-pairs/problem
+Solution:
+SET @r1=0, @r2=0;
+SELECT
+    TX,
+    TY
+FROM
+(
+    SELECT
+        T1.X AS TX,
+        T1.Y AS TY,
+        ABS(T1.X-T2.Y) AS SX,
+        ABS(T1.Y-T2.X) AS SY
+    FROM
+    (
+        (SELECT X, Y, @r1 := @r1+1 as r1_n FROM functions order by X ASC) T1,
+        (SELECT X, Y, @r2 := @r2+1 as r2_n FROM functions order by X ASC) T2
+    )
+    WHERE T1.r1_n != T2.r2_n
+    AND T1.r1_n < T2.r2_n
+    ORDER BY T1.X
+) AS MN
+WHERE MN.SX = 0 AND MN.SY = 0
+GROUP BY TX, TY
+HAVING COUNT(*) >= 1
+ORDER BY TX;
+

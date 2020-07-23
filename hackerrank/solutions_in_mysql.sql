@@ -221,3 +221,74 @@ GROUP BY TX, TY
 HAVING COUNT(*) >= 1
 ORDER BY TX;
 
+16. https://www.hackerrank.com/challenges/challenges/problem
+Solution:
+SET @MX_CNT=0;
+SELECT HK_ID, HK_NAME, CNT
+FROM
+(
+    SELECT
+        HK.hacker_id AS HK_ID,
+        HK.name AS HK_NAME,
+        count(CH.challenge_id) AS CNT
+    FROM hackers HK
+    RIGHT JOIN challenges CH
+    ON HK.hacker_id = CH.hacker_id
+    GROUP BY HK_ID, HK_NAME
+    ORDER BY CNT DESC, HK_ID ASC
+) AS main_table
+WHERE CNT not in 
+(
+    SELECT C_CNT
+    FROM
+    (
+        SELECT C_CNT, count(C_CNT) AS TOT_CNT
+        FROM 
+        (
+            SELECT C_CNT
+            FROM
+            (
+                SELECT
+                    count_h.hacker_id AS C_HK_ID,
+                    count_h.name AS C_HK_NAME,
+                    count(count_c.challenge_id) AS C_CNT
+                FROM hackers count_h
+                RIGHT JOIN challenges count_c
+                ON count_h.hacker_id = count_c.hacker_id
+                GROUP BY C_HK_ID, C_HK_NAME
+                ORDER BY C_CNT DESC
+            ) c1
+        ) count_table
+        GROUP BY count_table.C_CNT
+        HAVING TOT_CNT > 1
+    ) T1
+)
+OR CNT in 
+(
+    SELECT
+    (
+        CASE
+            WHEN M_CNT >= @MX_CNT THEN @MX_CNT := M_CNT
+        END
+    ) OUT_MX
+    FROM 
+    (
+        SELECT M_CNT
+        FROM
+        (
+            SELECT
+                mx_HK.hacker_id AS M_HK_ID,
+                mx_HK.name AS M_HK_NAME,
+                count(mx_CH.challenge_id) AS M_CNT
+            FROM hackers mx_HK
+            RIGHT JOIN challenges mx_CH
+            ON mx_HK.hacker_id = mx_CH.hacker_id
+            GROUP BY M_HK_ID, M_HK_NAME
+            ORDER BY M_CNT DESC
+        ) AS m1
+    ) max_table
+    GROUP BY max_table.M_CNT
+    ORDER BY max_table.M_CNT DESC
+)
+
+
